@@ -46,9 +46,21 @@ CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install -r requirements.txt
 Installing the required packages for GPU inference on Nvidia GPUs, like gcc 11 and CUDA 11, may cause conflicts with other packages in your system.
 As an alternative to Conda, you can use Docker with the provided Dockerfile.
 It includes CUDA, your system just needs Docker, BuildKit, your Nvidia GPU driver and the Nvidia container toolkit.
-Build as `docker build . -t localgpt`, requires BuildKit.
+
+### Build
+
+```shell
+DOCKER_BUILDKIT=1 docker build . -t localgpt
+```
+
+### Run
+
 Docker BuildKit does not support GPU during *docker build* time right now, only during *docker run*.
-Run as `docker run -it --mount src="$HOME/.cache",target=/root/.cache,type=bind --gpus=all localgpt`.
+Run as:
+
+```shell
+docker run -it --mount src="$HOME/.cache",target=/root/.cache,type=bind --gpus=all localgpt
+```
 
 ## Test dataset
 
