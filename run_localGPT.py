@@ -63,7 +63,21 @@ def load_model(device_type, model_id, model_basename=None):
                 kwargs["n_gpu_layers"] = 1000
                 kwargs["n_batch"] = max_ctx_size
             return LlamaCpp(**kwargs)
-
+        if ".gguf" in model_basename:
+            logging.info("Using Llamacpp for GGUF quantized models")
+            model_path = hf_hub_download(repo_id=model_id, filename=model_basename)
+            max_ctx_size = 2048
+            kwargs = {
+                "model_path": model_path,
+                "n_ctx": max_ctx_size,
+                "max_tokens": max_ctx_size,
+            }
+            if device_type.lower() == "mps":
+                kwargs["n_gpu_layers"] = 1000
+            if device_type.lower() == "cuda":
+                kwargs["n_gpu_layers"] = 1000
+                kwargs["n_batch"] = max_ctx_size
+            return LlamaCpp(**kwargs)
         else:
             # The code supports all huggingface models that ends with GPTQ and have some variation
             # of .no-act.order or .safetensors in their HF repo.
