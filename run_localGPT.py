@@ -3,7 +3,7 @@ import logging
 import click
 import torch
 from auto_gptq import AutoGPTQForCausalLM
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, HfApi
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline, LlamaCpp
@@ -22,6 +22,8 @@ from transformers import (
 )
 
 from constants import EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY, MODEL_ID, MODEL_BASENAME
+
+hf_api = HfApi()
 
 
 def load_model(device_type, model_id, model_basename=None):
@@ -61,20 +63,7 @@ def load_model(device_type, model_id, model_basename=None):
                 kwargs["n_gpu_layers"] = 1000
                 kwargs["n_batch"] = max_ctx_size
             return LlamaCpp(**kwargs)
-        elif ".gguf" in model_basename:
-            logging.info("Using Llamacpp for GGUF quantized models")
-            model_path = hf_hub_download(repo_id=model_id, filename=model_basename)
-            max_ctx_size = 2048
-            kwargs = {
-                "model_path": model_path,
-                "n_ctx": max_ctx_size,
-                "max_tokens": max_ctx_size,
-            }
-            if device_type.lower() == "mps":
-                kwargs["n_gpu_layers"] = 1000
-            if device_type.lower() == "cuda":
-                kwargs["n_gpu_layers"] = 1000
-                kwargs["n_batch"] = max_ctx_size
+
         else:
             # The code supports all huggingface models that ends with GPTQ and have some variation
             # of .no-act.order or .safetensors in their HF repo.
@@ -119,7 +108,7 @@ def load_model(device_type, model_id, model_basename=None):
         model = LlamaForCausalLM.from_pretrained(model_id)
 
     # Load configuration from the model to avoid warnings
-    generation_config = GenerationConfig.from_pretrained(model_id)
+    generation_config = load_generation_config(model_id)
     # see here for details:
     # https://huggingface.co/docs/transformers/
     # main_classes/text_generation#transformers.GenerationConfig.from_pretrained.returns
@@ -140,6 +129,26 @@ def load_model(device_type, model_id, model_basename=None):
     logging.info("Local LLM Loaded")
 
     return local_llm
+
+def load_generation_config(model_id):
+     logging.info("Going to auto detect config file name")
+     repo_files = hf_api.list_repo_files(model_id)
+     config_candidates = [file for file in repo_files if 'config' in file and file.endswith('.json')]
+     non_standard_config_file = None
+
+     if len(config_candidates != 1):
+         logging.warn('Unable to auto detect config file, using default name')
+     else:
+         non_standard_config_file = config_candidates[0]
+         logging.info(f"Using auto detected config file: {non_standard_config_file}")
+
+     if non_standard_config_file:
+         return GenerationConfig.from_pretrained(model_id, config_file_name=non_standard_config_file)
+
+     return GenerationConfig.from_pretrained(model_id)
+     # see here for details:
+     # https://huggingface.co/docs/transformers/
+     # main_classes/text_generation#transformers.GenerationConfig.from_pretrained.returns
 
 
 # chose device typ to run on as well as to show source documents.
