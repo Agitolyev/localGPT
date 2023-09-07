@@ -21,7 +21,10 @@ from transformers import (
     pipeline,
 )
 
-from constants import EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY, MODEL_ID, MODEL_BASENAME
+from constants import EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY, MODELS_DIRECTORY
+
+from settings import model_settings
+
 
 hf_api = HfApi()
 
@@ -50,7 +53,10 @@ def load_model(device_type, model_id, model_basename=None):
     if model_basename is not None:
         if ".ggml" in model_basename:
             logging.info("Using Llamacpp for GGML quantized models")
-            model_path = hf_hub_download(repo_id=model_id, filename=model_basename)
+            model_path = hf_hub_download(repo_id=model_id,
+                                         filename=model_basename,
+                                         local_dir=MODELS_DIRECTORY,
+                                         local_dir_use_symlinks=False)
             max_ctx_size = 2048
             kwargs = {
                 "model_path": model_path,
@@ -65,7 +71,10 @@ def load_model(device_type, model_id, model_basename=None):
             return LlamaCpp(**kwargs)
         if ".gguf" in model_basename:
             logging.info("Using Llamacpp for GGUF quantized models")
-            model_path = hf_hub_download(repo_id=model_id, filename=model_basename)
+            model_path = hf_hub_download(repo_id=model_id,
+                                         filename=model_basename,
+                                         local_dir=MODELS_DIRECTORY,
+                                         local_dir_use_symlinks=False)
             max_ctx_size = 2048
             kwargs = {
                 "model_path": model_path,
@@ -242,7 +251,7 @@ def main(device_type, show_sources):
     prompt = PromptTemplate(input_variables=["history", "context", "question"], template=template)
     memory = ConversationBufferMemory(input_key="question", memory_key="history")
 
-    llm = load_model(device_type, model_id=MODEL_ID, model_basename=MODEL_BASENAME)
+    llm = load_model(device_type, model_id=model_settings.model_id, model_basename=model_settings.model_basename)
 
     qa = RetrievalQA.from_chain_type(
         llm=llm,

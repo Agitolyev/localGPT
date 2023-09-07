@@ -1,4 +1,35 @@
+[tool.poetry]
+name = "lacalGPT"
+version = "0.0.1dev"
+description = "Local GPT runner"
+authors = ["PromtEngineer <john@doe.com>"]
+readme = "README.md"
+
 # ==== black ====
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+instructorembedding = "^1.0.1"
+faiss-cpu = "^1.7.4"
+docx2txt = "^0.8"
+chromadb = "0.4.6"
+langchain = "0.0.267"
+llama-cpp-python = "0.1.78"
+pdfminer-six = "20221105"
+sentence-transformers = "^2.2.2"
+huggingface-hub = "^0.16.4"
+transformers = "^4.32.1"
+auto-gptq = "0.2.2"
+unstructured = "^0.10.11"
+urllib3 = "1.26.6"
+accelerate = "^0.22.0"
+click = "^8.1.7"
+flask = "^2.3.3"
+requests = "^2.31.0"
+streamlit-extras = "^0.3.0"
+openpyxl = "^3.1.2"
+pydantic = "^1.9"
+
 [tool.black]
 line-length = 119
 target-version = ['py311']

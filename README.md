@@ -297,3 +297,68 @@ This is a test project to validate the feasibility of a fully local solution for
        conda uninstall tokenizers, transformers
        pip install transformers
     ```
+
+- The error message "nvidia-container-cli: initialization error: nvml error: driver not loaded: unknown" indicates that the NVIDIA driver is either not installed or not loaded properly. This is crucial for running containers that require GPU acceleration, such as those based on NVIDIA's CUDA.
+
+Here are some troubleshooting steps to resolve this issue:
+
+### 1. Check if NVIDIA Driver is Installed
+Run the following command to check if the NVIDIA driver is installed:
+
+```bash
+nvidia-smi
+```
+
+If you get an error or the command is not found, you likely need to install the NVIDIA driver.
+
+### 2. Install/Reinstall NVIDIA Driver
+If the driver is not installed, you can download it from the [NVIDIA website](https://www.nvidia.com/Download/index.aspx) and follow the installation instructions for your operating system.
+
+### 3. Load the NVIDIA Kernel Module
+If the driver is installed but not loaded, you can try loading the kernel module manually:
+
+```bash
+sudo modprobe nvidia
+```
+
+### 4. Restart Docker
+Sometimes, restarting the Docker service can help:
+
+```bash
+sudo systemctl restart docker
+```
+
+### 5. Check for Compatibility
+Make sure that the versions of Docker, NVIDIA Docker (nvidia-docker), and the NVIDIA driver are compatible with each other.
+
+### 6. Check Docker Logs
+You can check Docker logs for more details on the error:
+
+```bash
+journalctl -u docker.service
+```
+
+### 7. Reinstall NVIDIA Docker
+If you've installed NVIDIA Docker, try reinstalling it:
+
+```bash
+# Uninstall
+sudo apt-get remove nvidia-docker2
+sudo apt-get purge nvidia-docker2
+
+# Reinstall
+sudo apt-get update
+sudo apt-get install -y nvidia-docker2
+```
+
+### 8. Check for System Updates
+Sometimes, system updates can cause compatibility issues. Make sure your system is up-to-date, and consider updating if it's not.
+
+### 9. Reboot the System
+As a last resort, you can try rebooting your system to see if that resolves the issue.
+
+```bash
+sudo reboot
+```
+
+If you've tried all these steps and are still encountering the issue, please provide more details about your setup, such as the operating system, Docker version, and NVIDIA driver version, for more targeted assistance.

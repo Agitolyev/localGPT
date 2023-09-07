@@ -3,7 +3,8 @@ import subprocess
 import streamlit as st
 from run_localGPT import load_model
 from langchain.vectorstores import Chroma
-from constants import CHROMA_SETTINGS, EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY, MODEL_ID, MODEL_BASENAME
+from constants import CHROMA_SETTINGS, EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY
+from settings import model_settings
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.chains import RetrievalQA
 from streamlit_extras.add_vertical_space import add_vertical_space
@@ -36,8 +37,8 @@ with st.sidebar:
     This app is an LLM-powered chatbot built using:
     - [Streamlit](https://streamlit.io/)
     - [LangChain](https://python.langchain.com/)
-    - [LocalGPT](https://github.com/PromtEngineer/localGPT) 
- 
+    - [LocalGPT](https://github.com/PromtEngineer/localGPT)
+
     ''')
     add_vertical_space(5)
     st.write('Made with ❤️ by [Prompt Engineer](https://youtube.com/@engineerprompt)')
@@ -48,7 +49,7 @@ DEVICE_TYPE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 if "result" not in st.session_state:
-    # Run the document ingestion process. 
+    # Run the document ingestion process.
     run_langest_commands = ["python", "ingest.py"]
     run_langest_commands.append("--device_type")
     run_langest_commands.append(DEVICE_TYPE)
@@ -75,7 +76,7 @@ if "RETRIEVER" not in st.session_state:
     st.session_state.RETRIEVER = RETRIEVER
 
 if "LLM" not in st.session_state:
-    LLM = load_model(device_type=DEVICE_TYPE, model_id=MODEL_ID, model_basename=MODEL_BASENAME)
+    LLM = load_model(device_type=DEVICE_TYPE, model_id=model_settings.model_id, model_basename=model_settings.model_basename)
     st.session_state["LLM"] = LLM
 
 
@@ -86,9 +87,9 @@ if "QA" not in st.session_state:
     prompt, memory = model_memory()
 
     QA = RetrievalQA.from_chain_type(
-        llm=LLM, 
-        chain_type="stuff", 
-        retriever=RETRIEVER, 
+        llm=LLM,
+        chain_type="stuff",
+        retriever=RETRIEVER,
         return_source_documents=True,
         chain_type_kwargs={"prompt": prompt, "memory": memory},
     )
@@ -107,13 +108,13 @@ if prompt:
     # ...and write it out to the screen
     st.write(answer)
 
-    # With a streamlit expander  
+    # With a streamlit expander
     with st.expander('Document Similarity Search'):
         # Find the relevant pages
-        search = st.session_state.DB.similarity_search_with_score(prompt) 
+        search = st.session_state.DB.similarity_search_with_score(prompt)
         # Write out the first
-        for i, doc in enumerate(search): 
+        for i, doc in enumerate(search):
             # print(doc)
             st.write(f"Source Document # {i+1} : {doc[0].metadata['source'].split('/')[-1]}")
-            st.write(doc[0].page_content) 
+            st.write(doc[0].page_content)
             st.write("--------------------------------")

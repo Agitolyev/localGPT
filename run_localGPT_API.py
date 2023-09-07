@@ -25,7 +25,9 @@ from transformers import (
 )
 from werkzeug.utils import secure_filename
 
-from constants import CHROMA_SETTINGS, EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY, MODEL_ID, MODEL_BASENAME
+from constants import CHROMA_SETTINGS, EMBEDDING_MODEL_NAME, PERSIST_DIRECTORY
+
+from settings import model_settings
 
 DEVICE_TYPE = "cuda" if torch.cuda.is_available() else "cpu"
 SHOW_SOURCES = True
@@ -64,7 +66,7 @@ DB = Chroma(
 
 RETRIEVER = DB.as_retriever()
 
-LLM = load_model(device_type=DEVICE_TYPE, model_id=MODEL_ID, model_basename=MODEL_BASENAME)
+LLM = load_model(device_type=DEVICE_TYPE, model_id=model_settings.model_id, model_basename=model_settings.model_basename)
 
 QA = RetrievalQA.from_chain_type(
     llm=LLM, chain_type="stuff", retriever=RETRIEVER, return_source_documents=SHOW_SOURCES
@@ -120,7 +122,7 @@ def run_ingest_route():
         if DEVICE_TYPE == "cpu":
             run_langest_commands.append("--device_type")
             run_langest_commands.append(DEVICE_TYPE)
-            
+
         result = subprocess.run(run_langest_commands, capture_output=True)
         if result.returncode != 0:
             return "Script execution failed: {}".format(result.stderr.decode("utf-8")), 500
