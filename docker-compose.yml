@@ -1,6 +1,8 @@
+version: "3"
+
 services:
   localchat-gpu:
-    image: localchat:latest
+    image: localchat-gpu:latest
     build: .
     command: sleep 10000
     environment:
@@ -17,7 +19,7 @@ services:
               capabilities: [gpu]
 
   localchat-cpu:
-    image: localchat:latest
+    image: localchat-cpu:latest
     build: .
     command: sleep 10000
     environment:
