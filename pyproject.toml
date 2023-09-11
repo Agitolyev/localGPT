@@ -5,10 +5,33 @@ description = "Local GPT runner"
 authors = ["PromtEngineer <john@doe.com>"]
 readme = "README.md"
 
-# ==== black ====
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
 
+[[tool.poetry.source]]
+name = "torch_cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
+
+[tool.poetry.group.torch_cpu.dependencies]
+torch = { version = "1.13.1", source="torch_cpu"}
+torchaudio = { version = "0.13.1", source = "torch_cpu"}
+torchvision = { version = "0.14.1", source = "torch_cpu"}
+
+[[tool.poetry.source]]
+name = "torch_cuda"
+url = "https://download.pytorch.org/whl/cu117"
+priority = "supplemental"
+
+[tool.poetry.group.torch_cuda.dependencies]
+torch = { version = "1.13.1", source="torch_cuda"}
+torchaudio = { version = "0.13.1", source = "torch_cuda"}
+torchvision = { version = "0.14.1", source = "torch_cuda"}
+
+# ==== black ====
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "3.10.x"
 instructorembedding = "^1.0.1"
 faiss-cpu = "^1.7.4"
 docx2txt = "^0.8"
@@ -29,6 +52,7 @@ requests = "^2.31.0"
 streamlit-extras = "^0.3.0"
 openpyxl = "^3.1.2"
 pydantic = "^1.9"
+
 
 [tool.black]
 line-length = 119
